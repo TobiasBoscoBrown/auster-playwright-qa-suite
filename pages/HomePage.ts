@@ -48,6 +48,17 @@ export class HomePage extends BasePage {
     // visibility gate. No manual scroll.
     await expect(input).toBeVisible({ timeout: 15_000 });
     await input.fill(email);
+    // Hydration can re-render and clear the field right after fill(), which made
+    // checkValidity() read an empty value on WebKit. Web-first assert the value
+    // actually stuck before any caller reads validity; re-fill once if it didn't.
+    if (email !== '') {
+      try {
+        await expect(input).toHaveValue(email, { timeout: 5_000 });
+      } catch {
+        await input.fill(email);
+        await expect(input).toHaveValue(email, { timeout: 5_000 });
+      }
+    }
   }
 
   async submitNewsletter(): Promise<void> {

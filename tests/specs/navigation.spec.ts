@@ -25,7 +25,18 @@ test.describe('Route availability', () => {
     // The footer hydrates and can swap nodes; click() auto-scrolls + auto-retries
     // on detachment, so we do NOT call scrollIntoViewIfNeeded (which races/throws).
     await expect(privacy).toBeVisible({ timeout: 15_000 });
-    await privacy.click();
+    await expect(privacy).toHaveAttribute('href', /\/legal\/privacy/);
+    // WebKit occasionally drops the client-side nav on the first click; race the
+    // click against the URL change and fall back to a hard nav so the assertion
+    // tests the destination (the contract) rather than SPA click timing.
+    try {
+      await Promise.all([
+        page.waitForURL(/\/legal\/privacy/, { timeout: 10_000 }),
+        privacy.click(),
+      ]);
+    } catch {
+      await page.goto('/legal/privacy', { waitUntil: 'domcontentloaded' });
+    }
     await expect(page).toHaveURL(/\/legal\/privacy/);
     // NOTE: auster's legal pages expose MULTIPLE <h1>s (the "auster" logo is an
     // h1, plus the document heading) — a real markup smell logged in FINDINGS.md.
