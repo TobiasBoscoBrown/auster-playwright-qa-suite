@@ -27,7 +27,12 @@ export class HomePage extends BasePage {
   }
 
   get viewAllMagazineLink(): Locator {
-    return this.page.getByRole('link', { name: /view all/i }).first();
+    // Several "view all" links exist (magazine, fund, ...). Prefer the one that
+    // actually points at /magazine; fall back to the first if markup changes.
+    return this.page
+      .locator('a[href="/magazine"]', { hasText: /view all/i })
+      .or(this.page.getByRole('link', { name: /view all/i }))
+      .first();
   }
 
   async expectLoaded(): Promise<void> {
@@ -38,8 +43,13 @@ export class HomePage extends BasePage {
   // --- Newsletter signup (home) --------------------------------------------
 
   async fillNewsletterEmail(email: string): Promise<void> {
-    await this.newsletterEmailInput.scrollIntoViewIfNeeded();
-    await this.newsletterEmailInput.fill(email);
+    const input = this.newsletterEmailInput;
+    // The home page hydrates late and can swap the signup node during mount,
+    // which previously detached the element mid-scroll. Wait for a stable,
+    // visible field (web-first) before interacting.
+    await expect(input).toBeVisible({ timeout: 15_000 });
+    await input.scrollIntoViewIfNeeded();
+    await input.fill(email);
   }
 
   async submitNewsletter(): Promise<void> {

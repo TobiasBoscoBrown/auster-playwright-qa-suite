@@ -23,7 +23,17 @@ export class MagazinePage extends BasePage {
       .filter({ hasText: /\S/ });
   }
 
+  /** Article-slug links (excludes the /magazine listing root and fragments). */
+  get articleSlugLinks(): Locator {
+    return this.page.locator('a[href*="/magazine/"]').filter({
+      hasNot: this.page.locator('a[href$="/magazine"]'),
+    });
+  }
+
   async firstArticleHref(): Promise<string> {
+    // Cards hydrate client-side; wait (web-first) until at least one is attached
+    // before scraping hrefs, so WebKit/mobile don't read an empty listing.
+    await expect(this.articleSlugLinks.first()).toBeAttached({ timeout: 15_000 });
     const links = await this.page
       .locator('a[href*="/magazine/"]')
       .evaluateAll((els) =>
@@ -37,9 +47,8 @@ export class MagazinePage extends BasePage {
 
   async expectListingLoaded(): Promise<void> {
     await expect(this.footer).toBeVisible();
-    const count = await this.page
-      .locator('a[href*="/magazine/"]')
-      .count();
-    expect(count, 'expected article cards to render').toBeGreaterThan(0);
+    // Web-first wait: article cards render after hydration. Asserting on the
+    // locator (not an instantaneous count) lets Playwright poll until they exist.
+    await expect(this.articleSlugLinks.first()).toBeVisible({ timeout: 15_000 });
   }
 }

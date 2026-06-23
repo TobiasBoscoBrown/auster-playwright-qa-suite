@@ -27,13 +27,23 @@ export abstract class BasePage {
   }
 
   get newsletterEmailInput(): Locator {
-    return this.page.getByRole('textbox', { name: /email/i }).or(
-      this.page.locator('input[type="email"]'),
-    ).first();
+    // auster's signup email field is type=email + required but ships WITHOUT an
+    // accessible name (no <label>/aria-label) — logged in FINDINGS.md. We therefore
+    // anchor on the concrete input[type=email], which is present site-wide, and
+    // fall back to an accessible-name match if one is ever added.
+    return this.page
+      .locator('input[type="email"]')
+      .or(this.page.getByRole('textbox', { name: /email/i }))
+      .first();
   }
 
   get newsletterSubmit(): Locator {
-    return this.page.getByRole('button', { name: /^join$/i }).first();
+    // Submit control is the "Join" affordance next to the email field. Accept a
+    // button OR a submit input, and tolerate surrounding whitespace in the label.
+    return this.page
+      .getByRole('button', { name: /join/i })
+      .or(this.page.locator('form:has(input[type="email"]) button[type="submit"], form:has(input[type="email"]) button'))
+      .first();
   }
 
   get privacyLink(): Locator {

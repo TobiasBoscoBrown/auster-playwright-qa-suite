@@ -19,8 +19,17 @@ test.describe('Route availability', () => {
 
   test('footer legal links navigate to the legal pages', async ({ homePage, page }) => {
     await homePage.open();
-    await homePage.privacyLink.click();
+    // The footer is below the fold and the legal link can be one of several
+    // matches; scope to the footer and force the nav so the click is reliable.
+    const privacy = page.locator('footer').getByRole('link', { name: /privacy policy/i }).first();
+    await privacy.scrollIntoViewIfNeeded();
+    await privacy.click();
     await expect(page).toHaveURL(/\/legal\/privacy/);
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    // NOTE: auster's legal pages expose MULTIPLE <h1>s (the "auster" logo is an
+    // h1, plus the document heading) — a real markup smell logged in FINDINGS.md.
+    // We assert the page rendered a visible top-level heading without tripping
+    // strict mode by taking the first match.
+    await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
+    await expect(page.locator('body')).toContainText(/privacy/i);
   });
 });

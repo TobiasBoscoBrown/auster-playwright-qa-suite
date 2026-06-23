@@ -24,7 +24,7 @@ export default defineConfig({
   timeout: 45_000,
   fullyParallel: true,
   forbidOnly: IS_CI,
-  retries: IS_CI ? 2 : 1,
+  retries: IS_CI ? 1 : 0,
   workers: IS_CI ? 4 : undefined,
   reporter: [
     ['html', { open: 'never', outputFolder: 'playwright-report' }],

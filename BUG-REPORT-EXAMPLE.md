@@ -89,3 +89,18 @@ test('article OG/Twitter title equals the article title', async ({ page }) => {
 ```
 
 This converts a silent, off-site SEO leak into a hard, repeatable gate.
+
+---
+
+## Additional live-site findings
+
+A full set of accessibility findings from running this suite against production
+(`https://auster.network`) is documented in **[FINDINGS.md](./FINDINGS.md)**, including:
+
+- **High** — icon-only navigation buttons with no accessible name (`button-name`, WCAG 4.1.2).
+- **Medium** — sub-headline and "view all" link colour contrast below AA (`color-contrast`, WCAG 1.4.3).
+- **Low** — multiple `<h1>` per page (logo marked up as `<h1>`); newsletter email field missing a programmatic label.
+
+These are surfaced as non-blocking annotations in the suite (baselined in
+`tests/specs/accessibility.spec.ts`) so CI stays green on third-party defects while
+any **new** regression beyond the documented baseline still fails the build.
