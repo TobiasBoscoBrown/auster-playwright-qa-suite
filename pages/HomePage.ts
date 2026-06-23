@@ -27,12 +27,9 @@ export class HomePage extends BasePage {
   }
 
   get viewAllMagazineLink(): Locator {
-    // Several "view all" links exist (magazine, fund, ...). Prefer the one that
-    // actually points at /magazine; fall back to the first if markup changes.
-    return this.page
-      .locator('a[href="/magazine"]', { hasText: /view all/i })
-      .or(this.page.getByRole('link', { name: /view all/i }))
-      .first();
+    // TWO "view all" links exist on the home page (one -> /magazine, one -> /fund),
+    // so we anchor strictly on the /magazine anchor carrying "view all" text.
+    return this.page.locator('a[href="/magazine"]', { hasText: /view all/i }).first();
   }
 
   async expectLoaded(): Promise<void> {
@@ -44,11 +41,12 @@ export class HomePage extends BasePage {
 
   async fillNewsletterEmail(email: string): Promise<void> {
     const input = this.newsletterEmailInput;
-    // The home page hydrates late and can swap the signup node during mount,
-    // which previously detached the element mid-scroll. Wait for a stable,
-    // visible field (web-first) before interacting.
+    // auster's home page hydrates continuously and swaps the signup node during
+    // mount, so an explicit scrollIntoViewIfNeeded() races and throws
+    // "element is not attached". We rely on Playwright's auto-waiting fill(),
+    // which auto-scrolls AND auto-retries on detachment, after a web-first
+    // visibility gate. No manual scroll.
     await expect(input).toBeVisible({ timeout: 15_000 });
-    await input.scrollIntoViewIfNeeded();
     await input.fill(email);
   }
 

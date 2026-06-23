@@ -22,7 +22,9 @@ test.describe('Route availability', () => {
     // The footer is below the fold and the legal link can be one of several
     // matches; scope to the footer and force the nav so the click is reliable.
     const privacy = page.locator('footer').getByRole('link', { name: /privacy policy/i }).first();
-    await privacy.scrollIntoViewIfNeeded();
+    // The footer hydrates and can swap nodes; click() auto-scrolls + auto-retries
+    // on detachment, so we do NOT call scrollIntoViewIfNeeded (which races/throws).
+    await expect(privacy).toBeVisible({ timeout: 15_000 });
     await privacy.click();
     await expect(page).toHaveURL(/\/legal\/privacy/);
     // NOTE: auster's legal pages expose MULTIPLE <h1>s (the "auster" logo is an

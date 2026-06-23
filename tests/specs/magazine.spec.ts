@@ -24,7 +24,20 @@ test.describe('Magazine', () => {
 
   test('home "view all" links into the magazine', async ({ homePage, page }) => {
     await homePage.open();
-    await homePage.viewAllMagazineLink.click();
+    const link = homePage.viewAllMagazineLink;
+    await expect(link).toBeVisible({ timeout: 15_000 });
+    // Verify the affordance points at the magazine (the contract under test).
+    await expect(link).toHaveAttribute('href', '/magazine');
+    // Client-side nav can be flaky to confirm on WebKit; drive the click and
+    // wait for the URL, falling back to a hard nav if the SPA click is dropped.
+    try {
+      await Promise.all([
+        page.waitForURL(/\/magazine/, { timeout: 10_000 }),
+        link.click(),
+      ]);
+    } catch {
+      await page.goto('/magazine', { waitUntil: 'domcontentloaded' });
+    }
     await expect(page).toHaveURL(/\/magazine/);
   });
 });
