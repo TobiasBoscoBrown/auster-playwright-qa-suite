@@ -1,0 +1,34 @@
+{
+  "name": "auster-playwright-qa-suite",
+  "version": "1.0.0",
+  "description": "End-to-end Playwright + TypeScript QA automation suite for auster.network",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:chromium": "playwright test --project=chromium",
+    "test:smoke": "playwright test --grep @smoke",
+    "test:a11y": "playwright test tests/specs/accessibility.spec.ts",
+    "test:visual": "playwright test --project=visual",
+    "test:update-snapshots": "playwright test --project=visual --update-snapshots",
+    "report": "playwright show-report",
+    "lint:types": "tsc --noEmit"
+  },
+  "keywords": [
+    "playwright",
+    "typescript",
+    "qa",
+    "automation",
+    "e2e",
+    "accessibility"
+  ],
+  "author": "Tobias Brown",
+  "license": "MIT",
+  "devDependencies": {
+    "@axe-core/playwright": "^4.11.3",
+    "@playwright/test": "^1.61.0",
+    "@types/node": "^22.20.0",
+    "typescript": "^5.9.3"
+  }
+}
